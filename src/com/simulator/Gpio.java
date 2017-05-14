@@ -194,18 +194,38 @@ public class Gpio extends JFrame {
 
 	public static String evaluate(String json) {
 
-		long PinNum=0;
+
+		long GPFSEL0=0;   /* 0x00 Function Select Pins 0-9   */
+		long GPFSEL1=0;   /* 0x04 Function Select Pins 10-19 */
+		long GPFSEL2=0;   /* 0x08 Function Select Pins 20-29 */
+		long GPFSEL3=0;   /* 0x0c Function Select Pins 30-39 */
+		long GPFSEL4=0;   /* 0x10 Function Select Pins 40-49 */
+		long GPFSEL5=0;   /* 0x14 Function Select Pins 50-53 */
+		long PINSET0=0; /* Derived output state for pins  0-31 based on SET and CLR registers */
+		long PINSET1=0; /* Derived output state for pins  32-53 based on SET and CLR registers */
+
+
+		/*long PinNum=0;
 		boolean PinVal=true;
-		boolean PinDir=true;
+		boolean PinDir=true;*/
 		System.out.println("\n string before parsing...."+json);
 		// parse input JSON text
 		try {
 			JSONObject obj = (JSONObject) JSONValue.parse(new String(json));
-			PinNum=(Long) JSONValue.parse(obj.get("PinNum").toString());
-			PinVal=(Boolean) JSONValue.parse(obj.get("PinVal").toString());
-			PinDir=(Boolean) JSONValue.parse(obj.get("PinDir").toString());
-			System.out.println("PinNo:"+PinNum +" and PinVal: "+PinVal+" and PinDir:" +PinDir);
-			if(PinVal==true)
+			//PinNum=(Long) JSONValue.parse(obj.get("PinNum").toString());
+			GPFSEL0 = (Long) JSONValue.parse(obj.get("GPFSEL0").toString());
+			GPFSEL1 = (Long) JSONValue.parse(obj.get("GPFSEL1").toString());
+			GPFSEL2 = (Long) JSONValue.parse(obj.get("GPFSEL2").toString());
+			GPFSEL3 = (Long) JSONValue.parse(obj.get("GPFSEL3").toString());
+			GPFSEL4 = (Long) JSONValue.parse(obj.get("GPFSEL4").toString());
+			GPFSEL5 = (Long) JSONValue.parse(obj.get("GPFSEL5").toString());
+			PINSET0 = (Long) JSONValue.parse(obj.get("PINSET0").toString());
+			PINSET1 = (Long) JSONValue.parse(obj.get("PINSET1").toString());
+
+			System.out.println("GPFSEL0:"+GPFSEL0 +"GPFSEL1: "+GPFSEL1+"GPFSEL2:" +GPFSEL2+"GPFSEL3:"+GPFSEL3 +"GPFSEL4: "+GPFSEL4+"GPFSEL5:" +GPFSEL5);
+			System.out.println("PINSET0:"+PINSET0 +"PINSET1: "+PINSET1);
+
+			/*if(PinVal==true)
 			{ 
 				Define.PinValue[(int) PinNum]=1;
 			}else
@@ -215,14 +235,15 @@ public class Gpio extends JFrame {
 			{ 
 				Define.PinDirection[(int) PinNum]=1;
 			}else
-				Define.PinDirection[(int) PinNum]=0;
+				Define.PinDirection[(int) PinNum]=0;*/
 			
 		}
 		catch(Exception e){
 			System.out.println(e);
 		}
 
-		return PinNum+""+PinVal+""+PinDir;	}
+		//return PinNum+""+PinVal+""+PinDir;	}
+		return GPFSEL0+""+GPFSEL1+""+GPFSEL2;	}
 
 	/**
 	 * Create the frame.
