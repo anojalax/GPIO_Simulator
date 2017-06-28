@@ -33,31 +33,31 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 public class Gpio extends JFrame implements ItemListener {
-	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
+	static String abs_path = "Resources/";
+	public static ServerSocket s = null;
+	public static Socket incoming = null;
+	private static final long serialVersionUID = 1L;
+
+	private static final int TIMER_DELAY = 3000;
+	private static final int MAX_TIME = 10000;
+	private static final String READY = "ready";
+
 	final static JButton led[] = new RoundButton[Define.NUM_PINS];
 	final static SteelCheckBox swt[] = new SteelCheckBox[Define.NUM_PINS];
+	final static JLabel pull_label[] = new JLabel[Define.NUM_PINS];
 	final JButton pin[] = new JButton[Define.NUM_PINS];
 	final JLabel pinlabel[] = new JLabel[Define.NUM_PINS];
-	final static JLabel pull_label[] = new JLabel[Define.NUM_PINS];
-	static String abs_path = "/home/anoja/GPIO_Simulator";
-	static long CHECKBIT(long REG, int BIT) {
+
+	static long check_bit(long REG, int BIT) {
 		return (REG >> BIT) & 1;
 	}
 
-	public static ServerSocket s = null;
-	public static Socket incoming = null;
-
-	public void paintComponent(Graphics g) {
-		super.paintComponents(g);
-		Graphics2D g2d = (Graphics2D) g;
-		g2d.drawRect(100, 90, 120, 100);
-	}
 
 	public static void main(String[] args) throws IOException {
 		Gpio gpio = new Gpio();
 		gpio.setVisible(true);
-		s = new ServerSocket(8988); /* Establish server socket*/
+		s = new ServerSocket(Define.PORT_NUMBER); /* Establish server socket*/
 		System.out.println("Server created @ 8988, Waiting for client request");
 		/* wait for incoming connection */
 		incoming = s.accept();
@@ -117,7 +117,7 @@ public class Gpio extends JFrame implements ItemListener {
 				Define.PINDIR = PINDIR;
 				for (int i = 0; i < Define.NUM_GPIO_PINS; i++) {
 					/*If Pin is Input*/
-					if (CHECKBIT(Define.PINDIR, Define.pinmap[i]) == 0) {
+					if (check_bit(Define.PINDIR, Define.pinmap[i]) == 0) {
 						/* invisible led symbol and switch visible*/
 						led[Define.pinmap[i]].setVisible(false);
 						swt[Define.pinmap[i]].setVisible(true);
@@ -125,7 +125,7 @@ public class Gpio extends JFrame implements ItemListener {
 					{  /* led should be visible & Switch invisible*/
 						led[Define.pinmap[i]].setVisible(true);
 						swt[Define.pinmap[i]].setVisible(false);
-						if (CHECKBIT(Define.PIN_LED, Define.pinmap[i]) == 0) /*led display in GRAY*/
+						if (check_bit(Define.PIN_LED, Define.pinmap[i]) == 0) /*led display in GRAY*/
 							led[Define.pinmap[i]].setBackground(Color.GRAY);
 						else /* led should glow continuous BRIGHT RED*/
 							led[Define.pinmap[i]].setBackground(Color.RED);
@@ -140,19 +140,20 @@ public class Gpio extends JFrame implements ItemListener {
 				Define.PUD0 = PUD0;
 				Define.PUD1 = PUD1;
 				int p = 0;
-				File pulldownimage = new File(abs_path + "/down-comp.jpg");
-				File pullupimage = new File(abs_path + "/up-comp.jpg");
+				File pulldownimage = new File(abs_path+"down-comp.jpg");
+				File pullupimage = new File(abs_path+"up-comp.jpg");
 				Image pulldownim = ImageIO.read(pulldownimage);
 				Image pullupim = ImageIO.read(pullupimage);
 				ImageIcon pulldown = new ImageIcon(pulldownim);
 				ImageIcon pullup = new ImageIcon(pullupim);
-
-				for (int pin = 0; pin < Define.NUM_GPIO_PINS; pin++) {
+				pull_label[Define.pinmap[0]].setIcon(pullup);
+				pull_label[Define.pinmap[1]].setIcon(pullup);
+				for (int pin = 2; pin < Define.NUM_GPIO_PINS; pin++) {
 					if (Define.pinmap[pin] < 32)
 						p = (int) ((Define.PUD0 >> (2 * Define.pinmap[pin])) & 0x3);
 					else if (Define.pinmap[pin] >= 32 & Define.pinmap[pin] < 54)
 						p = (int) ((Define.PUD1 >> (2 * Define.pinmap[pin])) & 0x3);
-					System.out.println("\n pin: " + Define.pinmap[pin] + "  p value: " + p);
+					//System.out.println("\n pin: " + Define.pinmap[pin] + "  p value: " + p);
 					if (p == 1) /*p value = 0x01 is set for pulldown */
 						pull_label[Define.pinmap[pin]].setIcon(pulldown);
 					else if (p == 2) /*p value = 0x01 is set for pullup */
@@ -186,8 +187,6 @@ public class Gpio extends JFrame implements ItemListener {
 				led[Define.pinmap[pin]].revalidate();
 			}
 		}
-
-
 	}
 
 	public void itemStateChanged(ItemEvent e) {
@@ -208,13 +207,11 @@ public class Gpio extends JFrame implements ItemListener {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
-
 		final JPanel panel = new JPanel();
 		timerISR();
 		getContentPane().add(panel, BorderLayout.CENTER);
 		panel.setVisible(true);
 		panel.setLayout(null);
-
 		JLabel lblGpioSimulator = new JLabel("GPIO SIMULATOR");
 		lblGpioSimulator.setFont(new Font("Dialog", Font.BOLD, 26));
 		lblGpioSimulator.setBounds(296, 12, 260, 27);
@@ -265,13 +262,7 @@ public class Gpio extends JFrame implements ItemListener {
 			pinlabel[i].setBounds((i % 2 == 0) ? 233 : 510, 96 + ((i / 2) * 44), 96, 27);
 			panel.add(pinlabel[i]);
 		}
-
 	}
-
-	private static final int TIMER_DELAY = 3000;
-	private static final int MAX_TIME = 10000;
-	private static final String READY = "ready";
-
 	public void timerISR() {
 
 		Timer actionTimer = new Timer(TIMER_DELAY, new ActionListener() {
